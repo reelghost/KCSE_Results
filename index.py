@@ -1,15 +1,5 @@
 import requests
-from bs4 import BeautifulSoup as soup
-from lxml import etree
-from time import sleep
-from telegram.ext import Updater
-from telegram import Update
-from telegram.ext import CallbackContext
-from telegram.ext import CommandHandler
-from telegram.ext import MessageHandler
-import logging
-from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from bs4 import BeautifulSoup
 
 
 def check_results(indexNumber, name):
@@ -20,30 +10,48 @@ def check_results(indexNumber, name):
     }
 
     # Sending a POST request with the payload data
-    s = requests.post(url, data=payload)
+    response = requests.post(url, data=payload)
 
     # Check if the request was successful before parsing
-    if s.status_code == 200:
-        # Parse the response content using Beautiful Soup and 'lxml' parser
-        page = soup(s.content, 'html.parser')
-        body = page.find("body")
+    if response.status_code == 200:
+        # Parse the response content using Beautiful Soup
+        page = BeautifulSoup(response.content, 'html.parser')
 
-        dom = etree.HTML(str(body)) # Parse the HTML content of the page
-        xpath_str = '//*[@class="text-center"]' # The XPath expression for the blog's title
-        name_index_num = dom.xpath(xpath_str)[0].text
-        school = dom.xpath(xpath_str)[1].text
-        mean_grade = dom.xpath(f"{xpath_str}/span[2]")[0].text
+        # Extract the results section
+        results_table = page.find("table", class_="table-borderless")
+        if results_table:
+            # Extract general information like the student's name, school, and mean grade
+            general_info = [row.get_text(strip=True) for row in results_table.find_all("th")]
 
-        resp_data = {
-            "name":name_index_num,
-            "school":school,
-            "mean_grade":mean_grade
-        }
+            # Extract detailed subject grades
+            detailed_results = []
+            results_grid = page.find("table", id="grid")
+            if results_grid:
+                for row in results_grid.find("tbody").find_all("tr"):
+                    columns = [col.get_text(strip=True) for col in row.find_all("td")]
+                    detailed_results.append(columns)
+
+            return {
+                "general_info": general_info,
+                "detailed_results": detailed_results
+            }
+        else:
+            return {"error": "Results table not found."}
     else:
-        resp_data = f"Failed to fetch data"
-
-    return resp_data
+        return {"error": f"Failed to fetch data. HTTP Status Code: {response.status_code}"}
 
 
-results = check_results("28500006081","ROONEY OKUTA")
-print(results)
+# Example usage
+results = check_results("02123304112", "ELIZABETH THOYA")
+
+# Print results
+if "error" in results:
+    print(results["error"])
+else:
+    print("General Info:")
+    for info in results["general_info"]:
+        print(info)
+
+    print("\nDetailed Results:")
+    for subject in results["detailed_results"]:
+        print("\t".join(subject))
