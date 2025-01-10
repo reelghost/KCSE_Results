@@ -1,7 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 import streamlit as st
 from time import sleep
+
+# Define a mapping for grades to ensure proper sorting
+GRADE_MAPPING = {
+    "A (PLAIN)": 1, "A- (MINUS)": 2,
+    "B+ (PLUS)": 3, "B (PLAIN)": 4, "B- (MINUS)": 5,
+    "C+ (PLUS)": 6, "C (PLAIN)": 7, "C- (MINUS)": 8,
+    "D+ (PLUS)": 9, "D (PLAIN)": 10, "D- (MINUS)": 11,
+    "E (PLAIN)": 12,
+}
 
 def check_results(index_number, name="**"):
     url = "https://results.knec.ac.ke/Home/CheckResults"
@@ -37,37 +47,62 @@ def check_results(index_number, name="**"):
 
 
 def fetch_school_results(school_code, max_attempts=300):
-    st.write(f"Fetching results for school code: {school_code}")
+    # Fetch school name
+    results = check_results(f"{school_code}001")
+    school_name = results["general_info"][2]
+    # st.write(f"{school_name}")
+    st.markdown(f"<h5 style='text-align: center;'>{school_name}</h5>", unsafe_allow_html=True)
     results_table = []
-    counter = 1
 
-    while counter <= max_attempts:
+    # Create a placeholder for the table
+    placeholder = st.empty()
+
+    for counter in range(1, max_attempts + 1):
         index_number = f"{school_code}{counter:03}"
         results = check_results(index_number)
 
         if "error" in results:
             if results["error"] == "Not found":
-                st.write(f"Index number {index_number}: Not found.")
                 break
             else:
                 st.error(results["error"])
                 break
         else:
             name_and_index = results["general_info"][1]  # 2nd in the list
+            name = name_and_index.split("-", 1)[-1].strip()  # Extract only the name
             mean_grade = results["general_info"][-1].strip("Mean Grade:")  # Last in the list
 
             # Append result to display table
-            results_table.append([index_number, name_and_index, mean_grade])
+            results_table.append([index_number, name, mean_grade])
 
-            # Display table in real-time
-            st.table(results_table)
+            # Convert to DataFrame, sort, and update dynamically
+            df = pd.DataFrame(results_table, columns=["Index Number", "Name", "Mean Grade"])
 
-        counter += 1
-        sleep(0.5)  # Sleep for 0.5 seconds to avoid being blocked by the server
+            # Sort by Mean Grade (convert grade to numeric using mapping for sorting)
+            df["Grade Numeric"] = df["Mean Grade"].map(GRADE_MAPPING)
+            df = df.sort_values(by="Grade Numeric").drop(columns=["Grade Numeric"])
+
+            # Update the dynamic table without the index column
+            placeholder.dataframe(df.reset_index(drop=True), use_container_width=True)
+
+    return results_table
 
 
 # Streamlit UI
 st.title("KNEC Results Fetcher")
 school_code = st.text_input("Enter school code:", "")
+
 if school_code:
-    fetch_school_results(school_code)
+    try:
+        results = fetch_school_results(school_code)
+        if results:
+            # Convert final results to DataFrame
+            df = pd.DataFrame(results, columns=["Index Number", "Name", "Mean Grade"])
+            # Sort by Mean Grade
+            df["Grade Numeric"] = df["Mean Grade"].map(GRADE_MAPPING)
+            df = df.sort_values(by="Grade Numeric").drop(columns=["Grade Numeric"])
+    except:
+        st.error("Check school code and try again.")
+st.markdown("<div style='text-align: center; font-size: 14px;'><a style='text-decoration: none;font-weight: bold;' target='_blank' href='https://github.com/reelghost'>reelghost✔</a> made it</div>", unsafe_allow_html=True)
+
+
