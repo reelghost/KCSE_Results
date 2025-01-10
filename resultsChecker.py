@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import streamlit as st
-from time import sleep
 
 # Define a mapping for grades to ensure proper sorting
 GRADE_MAPPING = {
@@ -104,5 +103,3 @@ if school_code:
     except:
         st.error("Check school code and try again.")
 st.markdown("<div style='text-align: center; font-size: 14px;'><a style='text-decoration: none;font-weight: bold;' target='_blank' href='https://github.com/reelghost'>reelghost✔</a> made it</div>", unsafe_allow_html=True)
-
-
