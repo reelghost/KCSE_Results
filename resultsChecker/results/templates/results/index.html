@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Results</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-4xl">
+        <h1 class="text-2xl font-bold mb-6 text-center">Check Results</h1>
+        <!-- Form to collect user input -->
+        <form hx-post="/check-results/" hx-target="#result" hx-swap="innerHTML" class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+            <div class="flex-grow">
+                <input type="text" id="indexNumber" name="indexNumber" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none " placeholder="Index Number" required="">
+            </div>
+            <div class="flex-grow">
+                <input type="text" id="name" name="name" class="block w-full h-11 px-5 py-2.5 bg-white leading-7 text-base font-normal shadow-xs text-gray-900 bg-transparent border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none " placeholder="Name" required="">
+            </div>
+            <div class="flex-shrink-0">
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-6 md:mt-0">Check Results</button>
+            </div>
+        </form>
+        <!-- Container to display the returned HTML -->
+        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-lg shadow-inner w-full md:w-4/5 mx-auto">
+            <!-- Server response will appear here -->
+        </div>
+    </div>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</body>
+</html>

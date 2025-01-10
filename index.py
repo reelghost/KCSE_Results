@@ -1,6 +1,6 @@
-
 import requests
 from bs4 import BeautifulSoup
+from time import sleep
 
 def check_results(indexNumber, name):
     url = "https://results.knec.ac.ke/Home/CheckResults"
@@ -36,27 +36,27 @@ def check_results(indexNumber, name):
 
 
 # List of names to try
-names_list = ["MWANASITI", "JOSEPHINE"]
+name = "**"
 
 # Loop through index numbers 001 to 100
 counter = 1
 while counter <= 300:
-    index_number = f"02127115{counter:03}"
+    # index_number = f"02127115{counter:03}"
+    index_number = f"02105109{counter:03}"
 
-    for name in names_list:
-        print(f"Checking results for index number: {index_number}, name: {name}")
+    results = check_results(index_number, name)
 
-        results = check_results(index_number, name)
-
-        if "error" in results:
-            print(results["error"])
-        else:
-            print("General Info:")
-            for info in results["general_info"]:
-                print(info)
-
-            print("\nDetailed Results:")
-            for subject in results["detailed_results"]:
-                print("\t".join(subject))
+    if "error" in results:
+        print(results["error"])
+    else:
+        school = results["general_info"][2]  # 3rd in the list
+        name_and_index = results["general_info"][1]  # 2nd in the list
+        mean_grade = results["general_info"][-1].strip("Mean Grade:")  # Last in the list
+        print(f"{school} - {name_and_index} -> {mean_grade}")
+        
+        # for subject in results["detailed_results"]:
+        #     print("\t".join(subject))
 
     counter += 1
+    sleep(0.5)  # Sleep for 1 second to avoid being blocked by the server
+    # break
