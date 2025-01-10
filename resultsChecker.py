@@ -95,8 +95,9 @@ def fetch_school_results(school_code, max_attempts=300, max_consecutive_not_foun
 
 
 # Streamlit UI
-st.title("KNEC Results Fetcher")
-school_code = st.text_input("Enter school code:", "")
+st.set_page_config(page_title="KCSE Results", page_icon="📚")
+st.title("KCSE Results Fetcher")
+school_code = st.text_input("Enter school code: (just google it)", "")
 
 if school_code:
     try:
