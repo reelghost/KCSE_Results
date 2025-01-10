@@ -30,6 +30,7 @@ def check_results(indexNumber, name):
                 "detailed_results": detailed_results
             }
         else:
+            print(response.text)
             return {"error": "Not found"}
     else:
         return {"error": f"Failed to fetch data. HTTP Status Code: {response.status_code}"}
@@ -39,10 +40,10 @@ def check_results(indexNumber, name):
 name = "**"
 
 # Loop through index numbers 001 to 100
-counter = 1
+counter = 3
 while counter <= 300:
     # index_number = f"02127115{counter:03}"
-    index_number = f"02105109{counter:03}"
+    index_number = f"01100003{counter:03}"
 
     results = check_results(index_number, name)
 
@@ -59,4 +60,4 @@ while counter <= 300:
 
     counter += 1
     sleep(0.5)  # Sleep for 1 second to avoid being blocked by the server
-    # break
+    break
